@@ -6,6 +6,10 @@
 # this stuff is worth it, you can buy me a beer in return
 # Cesar Oliveira
 
+# beatport2flac requires flac executable to be in the PATH
+# as well as the additional libraries:
+#	metagen - http://code.google.com/p/mutagen/
+
 from mutagen.flac import FLAC;
 import json;
 import urllib;
