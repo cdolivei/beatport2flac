@@ -20,12 +20,8 @@ import re;
 import tempfile;
 import stat;
 
-# log levels:
-#   0 - INFO
-#   1 - Verbose
-def log(message, level = 0) :
-	if level == 0:
-		print message;
+def log(message) :
+	print message;
 
 def extract_id(filename):
 	matches = re.match("(\d+)_.+?.wav", filename);
@@ -62,7 +58,7 @@ def beatport_api(id):
 	assert len(obj['results']) == 1, "Beatport returned %d items instead of 1" % ( len(obj['results']) );
 
 	result = obj['results'][0];
-	log(result, 1);
+	log(result);
 	assert 'mixName' in result, "Mix name not found in this track";
 	assert 'name' in result, "Name of track not found in the API";
 	assert 'genres' in result and len(result['genres']) > 0, "No genres found in this track";
