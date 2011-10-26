@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 
 # "THE BEER-WARE LICENSE" (Revision 42):
 # <a.sacred.line+beatport@gmail.com> wrote this file. As long as you retain this notice you
