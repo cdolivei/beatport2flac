@@ -109,7 +109,16 @@ def download_album_artwork(url):
 	file.close();
 	return temp[1];
 
+def usage(name):
+	print "%s - A beatport wav to flac converter" % name;
+	print "\tUsage: %s filename1 [ filename2 ... ]" % name;
+	print "\tExample: %s 12345_sometitle.wav 67890_othertitle.wav" % name;
+
 if __name__ == "__main__":
+	if len(sys.argv) < 2:
+		usage(sys.argv[0]);
+		sys.exit(0);
+		
 	# skip the calling script
 	files = sys.argv[1:];
 
