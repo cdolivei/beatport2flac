@@ -58,7 +58,6 @@ def beatport_api(id):
 	assert len(obj['results']) == 1, "Beatport returned %d items instead of 1" % ( len(obj['results']) );
 
 	result = obj['results'][0];
-	log(result);
 	assert 'mixName' in result, "Mix name not found in this track";
 	assert 'name' in result, "Name of track not found in the API";
 	assert 'genres' in result and len(result['genres']) > 0, "No genres found in this track";
@@ -97,7 +96,8 @@ def beatport_api(id):
 
 	return dict;
 
-# returns path to album artwork
+# returns path to album artwork. Caller is responsible for deleteing
+# temporary file
 def download_album_artwork(url):
 	temp = tempfile.mkstemp(prefix="jpg");
 	file = open(temp[1], "wb");
@@ -159,7 +159,9 @@ if __name__ == "__main__":
 			audio['album'] = metadata['release'];
 			audio['date'] = metadata['date'][0];
 			audio['genre'] = metadata['genre'];
+
 			log(audio.pprint());
+
 			audio.save();
 		except AssertionError as exception:
 			print exception;
