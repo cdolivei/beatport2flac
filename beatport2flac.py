@@ -27,7 +27,7 @@ def extract_id(filename):
     """
     Get the id of the track from the audio file
     """
-    matches = re.match("(\d+)_.+?.wav", filename)
+    matches = re.match("(\d+)_.+?.wav", os.path.basename(filename))
 
     assert matches != None, \
            "Format of file %s does not match expected format of Beatport downloads" % filename
