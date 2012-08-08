@@ -1,0 +1,7 @@
+h1. beatport2flac
+
+Converts wav audio files from "beatport.com":http://beatport.com to FLAC and inserts the audio metadata
+
+h2. Requirements
+# "flac":http://flac.sourceforge.net/ command-line utility in the PATH
+# "mutagen":http://code.google.com/p/mutagen/wiki/Tutorial to write album name, artist, album artwork, etc
