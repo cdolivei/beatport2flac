@@ -75,7 +75,7 @@ def beatport_api(id):
     result = obj['results'][0]
     data['track_name'] = result.get('name', None)
     data['mix_name'] = result.get('mixName', None)
-    data['genre'] = next(iter(result.get('genres', [])),
+    data['genre'] = next(iter(result.get('genres', list())),
                          emptyd).get('name', None)
     data['release'] = result.get('release', emptyd).get('name', None)
     data['release_date'] = result.get('releaseDate', None)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             pprint(metadata)
 
             process = None
-            if metadata['album_url'] != None :
+            if metadata.get('album_url', None) != None :
                 log("Downloading album artwork")
                 artwork = download_album_artwork(metadata['album_url'])
 
