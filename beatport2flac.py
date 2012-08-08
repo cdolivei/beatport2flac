@@ -114,11 +114,16 @@ def download_album_artwork(url):
     temp = tempfile.mkstemp(prefix="jpg")
     fd = open(temp[1], "wb")
 
-    request = urllib.urlopen(url)
-    response = request.read()
+    try :
+        request = urllib.urlopen(url)
+        response = request.read()
 
-    fd.write(response)
-    fd.close()
+        fd.write(response)
+    except :
+        pass
+    finally :
+        fd.close()
+
     return temp[1]
 
 def usage(name):
@@ -135,6 +140,7 @@ if __name__ == "__main__":
     arguments = sys.argv[1:]
 
     for filename in arguments:
+        artwork = None
         try:
             log("Inspecting %s" % (filename))
             assert os.path.exists(filename), "File not found: %s" % (filename) 
@@ -147,7 +153,6 @@ if __name__ == "__main__":
             print metadata
 
             process = None
-            artwork = None
             if metadata['album_url'] != None :
                 log("Downloading album artwork")
                 artwork = download_album_artwork(metadata['album_url'])
@@ -159,8 +164,6 @@ if __name__ == "__main__":
             else :
                 process = subprocess.Popen([ 'flac', '-V', filename ])
             process.wait()
-            if artwork != None:
-                os.remove(artwork)
             assert process.returncode == 0, \
                    "flac command did not execute successfully"
 
@@ -183,4 +186,10 @@ if __name__ == "__main__":
 
             audio.save()
         except AssertionError as exception:
-            print exception
+            log(exception)
+        except :
+            log("Unexpected exception raised")
+        finally:
+            if artwork != None:
+                os.remove(artwork)
+
