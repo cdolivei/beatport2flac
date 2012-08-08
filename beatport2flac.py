@@ -98,7 +98,7 @@ def beatport_api(id):
     """
 
     artists = map(lambda artist: artist['name'],
-                  filter(lambda artist : artist['type'] == 'Artist',
+                  filter(lambda artist : artist['type'].lower() == 'artist',
                          result['artists']))
 
     if len(artists) == 1:
