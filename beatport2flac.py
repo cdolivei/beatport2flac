@@ -112,13 +112,13 @@ def beatport_api(id):
 # temporary file
 def download_album_artwork(url):
     temp = tempfile.mkstemp(prefix="jpg")
-    file = open(temp[1], "wb")
+    fd = open(temp[1], "wb")
 
     request = urllib.urlopen(url)
     response = request.read()
 
-    file.write(response)
-    file.close()
+    fd.write(response)
+    fd.close()
     return temp[1]
 
 def usage(name):
@@ -132,14 +132,14 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # skip the calling script
-    files = sys.argv[1:]
+    arguments = sys.argv[1:]
 
-    for file in files:
+    for filename in arguments:
         try:
-            log("Inspecting %s" % (file))
-            assert os.path.exists(file), "File not found: %s" % (file) 
+            log("Inspecting %s" % (filename))
+            assert os.path.exists(filename), "File not found: %s" % (filename) 
 
-            id = extract_id(file)
+            id = extract_id(filename)
             log("Retrieved id %s" % (id))
 
             log("Connecting to beatport to retrieve metadata")
@@ -155,18 +155,18 @@ if __name__ == "__main__":
                 process = subprocess.Popen(['flac',
                                             '-V',
                                             '--picture=|image/jpeg|||%s' % artwork,
-                                            file ])
+                                            filename ])
             else :
-                process = subprocess.Popen([ 'flac', '-V', file ])
+                process = subprocess.Popen([ 'flac', '-V', filename ])
             process.wait()
             if artwork != None:
                 os.remove(artwork)
             assert process.returncode == 0, \
                    "flac command did not execute successfully"
 
-            flac_file = file.replace('.wav', '.flac')
+            flac_file = filename.replace('.wav', '.flac')
             assert os.path.exists(flac_file), \
-                   "%s file was not converted to %s" % (file, flac_file)
+                   "%s file was not converted to %s" % (filename, flac_file)
 
             os.chmod(flac_file,
                      stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
