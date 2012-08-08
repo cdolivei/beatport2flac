@@ -11,6 +11,7 @@
 #       metagen - http://code.google.com/p/mutagen/
 
 from mutagen.flac import FLAC
+from pprint import pprint
 import json
 import urllib
 import subprocess
@@ -150,7 +151,7 @@ if __name__ == "__main__":
 
             log("Connecting to beatport to retrieve metadata")
             metadata = beatport_api(id)
-            print metadata
+            pprint(metadata)
 
             process = None
             if metadata['album_url'] != None :
