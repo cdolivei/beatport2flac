@@ -21,6 +21,13 @@ import re
 import tempfile
 import stat
 
+class MissingMetadataError(Exception):
+    def __init__(self, value):
+        self.message = value
+    def __str__(self):
+        return repr(self.message)
+
+
 def log(message) :
     print message
 
@@ -44,15 +51,16 @@ def generate_beatport_url(id):
 # {
 #   artists
 #   track_name
-#   remix_name
+#   mix_name
 #   genre
 #   release
-#   date        - (year, month, day) tuple
-#   album_url   - album artwork, 500x500 jpg
+#   release_date - (year, month, day) tuple
+#   album_url    - album artwork, 500x500 jpg
 # }
 def beatport_api(id):
     url = generate_beatport_url(id)
     data = dict()
+    emptyd = dict() # empty dictionary
 
     request = urllib.urlopen(url)
     response = request.read()
@@ -65,38 +73,25 @@ def beatport_api(id):
            "Beatport returned %d items instead of 1" %  len(obj['results'])
 
     result = obj['results'][0]
-    assert 'mixName' in result, \
-           "Mix name not found in this track"
-    assert 'name' in result, \
-           "Name of track not found in the API"
-    assert 'genres' in result and len(result['genres']) > 0, \
-           "No genres found in this track"
-    assert 'release' in result, \
-           "Could not find release for this track"
-    assert 'releaseDate' in result, \
-           "Could not find the track's release date"
-    assert 'images' in result, \
-           "Could not find album artwork"
-    assert 'artists' in result, \
-           "Could not find track artists"
+    data['track_name'] = result.get('name', None)
+    data['mix_name'] = result.get('mixName', None)
+    data['genre'] = next(iter(result.get('genres', [])),
+                         emptyd).get('name', None)
+    data['release'] = result.get('release', emptyd).get('name', None)
+    data['release_date'] = result.get('releaseDate', None)
 
-    data['track_name'] = result['name']
-    data['remix_name'] = result['mixName']
-    data['genre'] = result['genres'][0]['name']
-    data['release'] = result['release']['name']
-    data['date'] = result['releaseDate'].split('-', 2)
+    missing_data = filter(lambda key: data[key] == None, data.keys())
+    if len(missing_data) > 0:
+        raise MissingMetadataError(', '.join(map(lambda x : x.replace('_', ' ')
+                                                             .capitalize(),
+                                                 missing_data)))
 
-    if 'large' in result['images'] :
-        data['album_url'] = result['images']['large']['url']
-    else :
-        data['album_url'] = None
-    """
+    data['release_date'] = data['release_date'].split('-', 2)
+
     # medium and small album art look like garbage on the iAudio 9. Don't even bother
-    elif 'medium' in result['images'] :
-            data['album_url'] = result['images']['medium']['url']
-    elif 'small' in result['images'] :
-            data['album_url'] = result['images']['small']['url']
-    """
+    data['album_url'] = result.get('images', emptyd) \
+                              .get('large', emptyd) \
+                              .get('url', None)
 
     artists = map(lambda artist: artist['name'],
                   filter(lambda artist : artist['type'].lower() == 'artist',
@@ -177,19 +172,25 @@ if __name__ == "__main__":
 
             audio = FLAC(flac_file)
             audio['title'] = "%s (%s)" % (metadata['track_name'],
-                                          metadata['remix_name'])
+                                          metadata['mix_name'])
             audio['artist'] = metadata['artist']
             audio['album'] = metadata['release']
-            audio['date'] = metadata['date'][0]
+            audio['date'] = metadata['release_date'][0]
             audio['genre'] = metadata['genre']
 
             log(audio.pprint())
 
             audio.save()
-        except AssertionError as exception:
+        except MissingMetadataError as exception :
+            log("Could not find (or missing) track information: %s. Skipping" %
+                exception.message)
+        except AssertionError as exception :
             log(exception)
-        except :
-            log("Unexpected exception raised")
+        except Exception as exception :
+            log("Hey you found a bug! Bugs really suck, I'm sorry.\r\n"\
+                "We have to skip this file, but you can file an issue at\r\n"\
+                "https://github.com/cdolivei/beatport2flac/issues\r\n"
+                "with the track name and this message : %s" % repr(exception))
         finally:
             if artwork != None:
                 os.remove(artwork)
